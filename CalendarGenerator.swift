@@ -10,19 +10,19 @@ import Foundation
 
 class CalendarGenerator: NSObject {
     
-    let calendar = NSCalendar.currentCalendar()
-    var components : NSDateComponents = NSDateComponents()
+    let calendar = Calendar.current()
+    var components : DateComponents = DateComponents()
     
     override init() {
         super.init()
         _ = self.getCurrentMonth()
     }
     
-    func getCurrentMonth() -> NSDate{
+    func getCurrentMonth() -> Date{
         
-        let date = NSDate()
+        let date = Date()
         
-        components = NSCalendar.currentCalendar().components([.Day , .Month , .Year], fromDate: date)
+        components = Calendar.current().components([.day , .month , .year], from: date)
         
         return date
     }
@@ -33,11 +33,11 @@ class CalendarGenerator: NSObject {
 
 
 // MARK: - NSDaTe extension
-public extension NSDate {
+public extension Date {
     
     func getMonthDescription() -> String{
         
-        let components = NSCalendar.currentCalendar().components([.Month , .Year], fromDate: self)
+        let components = Calendar.current().components([.month , .year], from: self)
         
         let year =  components.year
         let month = components.month
@@ -45,73 +45,79 @@ public extension NSDate {
         return "Mes: \(month) Año \(year)"
     }
     
-    func getNextDay() -> NSDate{
-        let date = NSCalendar.currentCalendar().dateByAddingUnit(.Day, value: 1, toDate: self, options: [])
+    func getNextDay() -> Date{
+        let date = Calendar.current().date(byAdding: .day, value: 1, to: self, options: [])
         return date!
     }
     
-    func getPreviusDay() -> NSDate{
-        let date = NSCalendar.currentCalendar().dateByAddingUnit(.Day, value: -1, toDate: self, options: [])
+    func getPreviusDay() -> Date{
+        let date = Calendar.current().date(byAdding: .day, value: -1, to: self, options: [])
         return date!
     }
     
-    func getNextMonth() -> NSDate{
-        let date = NSCalendar.currentCalendar().dateByAddingUnit(.Month, value: 1, toDate: self, options: [])
+    func getNextMonth() -> Date{
+        let date = Calendar.current().date(byAdding: .month, value: 1, to: self, options: [])
         return date!
     }
     
-    func getPreviusMonth() -> NSDate{
-        let date = NSCalendar.currentCalendar().dateByAddingUnit(.Month, value: -1, toDate: self, options: [])
+    func getPreviusMonth() -> Date{
+        let date = Calendar.current().date(byAdding: .month, value: -1, to: self, options: [])
         return date!
     }
     
-    func getPastSixMonths() -> NSDate{
-        let date = NSCalendar.currentCalendar().dateByAddingUnit(.Month, value: -6, toDate: self, options: [])
+    func getPreviusSixMonths() -> Date{
+        let date = Calendar.current().date(byAdding: .month, value: -6, to: self, options: [])
+        return date!
+    }
+    
+    func getPreviusYear() -> Date{
+        let date = Calendar.current().date(byAdding: .month, value: -12, to: self, options: [])
         return date!
     }
     
     func getTextDay() -> String{
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd"
-        return dateFormatter.stringFromDate(self)
+        return dateFormatter.string(from: self)
     }
     
-    func getDaysOfTheMonth() -> (previusdays:[NSDate], monthdays:[NSDate]){
+    func getDaysOfTheMonth() -> (previusdays:[Date], monthdays:[Date]){
         
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd-MM-yyyy"
         
-        var startOfMonth : NSDate?
-        var lengthOfMonth : NSTimeInterval = 0
-        NSCalendar.currentCalendar().rangeOfUnit(.Month, startDate: &startOfMonth, interval: &lengthOfMonth, forDate: self)
+        var startOfMonthNS : NSDate?
+        var lengthOfMonth : TimeInterval = 0
+        Calendar.current().range(of: .month, start: &startOfMonthNS, interval: &lengthOfMonth, for: self)
         //print(dateFormatter.stringFromDate(startOfMonth!))
         //print("\(lengthOfMonth / 60 / 60 / 24 )")
         let days = Int(lengthOfMonth / 60 / 60 / 24)
         
-        let components = NSCalendar.currentCalendar().components([.Weekday], fromDate: startOfMonth!)
+        var startOfMonth : Date = startOfMonthNS as! Date
+        let components = Calendar.current().components([.weekday], from: startOfMonth)
         var dayweek = components.weekday//NSCalendar.currentCalendar().dateFromComponents(components)!
-        dayweek = dayweek - 2
+        dayweek = dayweek! - 2
         if dayweek < 0 {
-            dayweek = dayweek + 7
+            dayweek = dayweek! + 7
         }
 
         //print("\(dayweek)")
         
-        var firstdayofweek = NSCalendar.currentCalendar().dateByAddingUnit(.Day, value: -(dayweek), toDate: startOfMonth!, options: [])
+        var firstdayofweek = Calendar.current().date(byAdding: .day, value: -(dayweek!), to: startOfMonth, options: [])
         //print(dateFormatter.stringFromDate(firstdayofweek!))
         
-        var previusdays = [NSDate]()
+        var previusdays = [Date]()
         
-        for _ in 0..<dayweek {
-            previusdays.append(firstdayofweek!.copy() as! NSDate)
+        for _ in 0..<dayweek! {
+            previusdays.append(firstdayofweek!)
             firstdayofweek = firstdayofweek?.getNextDay()
         }
         
-        var monthdays = [NSDate]()
+        var monthdays = [Date]()
         
         for _ in 1...days {
-            monthdays.append(startOfMonth!.copy() as! NSDate)
-            startOfMonth = startOfMonth?.getNextDay()
+            monthdays.append(startOfMonth)
+            startOfMonth = startOfMonth.getNextDay()
         }
         
         return (previusdays, monthdays)

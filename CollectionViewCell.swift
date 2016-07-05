@@ -15,10 +15,10 @@ class CollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var cellCollectioView: UICollectionView!
     @IBOutlet weak var monthLabel: UILabel!
     
-    var previusdays = [NSDate]()
-    var monthdays = [NSDate]()
+    var previusdays = [Date]()
+    var monthdays = [Date]()
     
-    var month = NSDate(){
+    var month = Date(){
         didSet {
             
             (previusdays, monthdays) = month.getDaysOfTheMonth()
@@ -38,36 +38,52 @@ class CollectionViewCell: UICollectionViewCell {
     }
     
 }
+
+
+//MARK: - COLLECTION VIEW DATA SOURCE PREFECTCHING
+extension CollectionViewCell: UICollectionViewDataSourcePrefetching{
     
-extension CollectionViewCell : UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDelegate{
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        //Precached stuff
+    }
+    
+}
+
+//MARK: - COLLECTION VIEW DATA SOURCE
+extension CollectionViewCell : UICollectionViewDataSource{
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let smallCell = collectionView.dequeueReusableCell(withReuseIdentifier: "dayCell", for: indexPath) as! DayCollectionViewCell
         
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let smallCell = collectionView.dequeueReusableCellWithReuseIdentifier("dayCell", forIndexPath: indexPath) as! DayCollectionViewCell
-        
-        if indexPath.item < previusdays.count {
-            smallCell.numberLabel.text = previusdays[indexPath.item].getTextDay()
+        if (indexPath as NSIndexPath).item < previusdays.count {
+            smallCell.numberLabel.text = previusdays[(indexPath as NSIndexPath).item].getTextDay()
             smallCell.alpha = 0.4
         }else{
-            smallCell.numberLabel.text = monthdays[indexPath.item - previusdays.count].getTextDay()
+            smallCell.numberLabel.text = monthdays[(indexPath as NSIndexPath).item - previusdays.count].getTextDay()
             smallCell.alpha = 1.0
         }
         
         return smallCell
     }
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return monthNumber
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAtIndex section: Int) -> CGFloat {
+}
+
+//MARK: - COLLECTION VIEW FLOW
+extension CollectionViewCell : UICollectionViewDelegateFlowLayout{
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 1
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAtIndex section: Int) -> CGFloat {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         var rows = CGFloat(trunc( Float(monthNumber) / 7))
         if monthNumber % 7 != 0 {
@@ -79,4 +95,13 @@ extension CollectionViewCell : UICollectionViewDelegateFlowLayout, UICollectionV
         return CGSize(width: collectionView.frame.size.width/7 - 1, height:collectionView.frame.size.height/rows - 1)
     }
         
+}
+
+//MARK: - COLLECTION VIEW DELEGATE
+extension CollectionViewCell : UICollectionViewDelegate{
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        //Do stuff...
+    }
+    
 }

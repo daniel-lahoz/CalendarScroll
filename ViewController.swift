@@ -19,7 +19,7 @@ class ViewController: UIViewController {
   let spaceBetweenCells = CGFloat(10)
   var horizontalInset = CGFloat()
     
-  var data = [NSDate]()
+  var data = [Date]()
     let calendarG = CalendarGenerator()
     
   var cellWidth = CGFloat()
@@ -30,8 +30,8 @@ class ViewController: UIViewController {
     self.containerView.addGestureRecognizer(self.scrollView.panGestureRecognizer)
   }
     
-    override func viewDidAppear(animated: Bool) {
-        self.scrollView.contentOffset = CGPoint(x: (self.cellWidth + self.spaceBetweenCells) * 6, y: 0)
+    override func viewDidAppear(_ animated: Bool) {
+        self.scrollView.contentOffset = CGPoint(x: (self.cellWidth + self.spaceBetweenCells) * 12, y: 0)
         //self.collectionView.selectItemAtIndexPath(NSIndexPath(forItem: 6, inSection: 0), animated: false, scrollPosition: .None)
         self.canadd = true
     }
@@ -50,13 +50,13 @@ extension ViewController {
   func prepareCollectionView() {
     
     let current = calendarG.getCurrentMonth()
-    var month = current.getPastSixMonths()
+    var month = current.getPreviusYear()
     
-    self.data.append(month)
+    self.data.append(month as Date)
     
-    for _ in 0...11 {
+    for _ in 0...23 {
         month = month.getNextMonth()
-        self.data.append(month)
+        self.data.append(month as Date)
     }
     
     self.collectionView.reloadData()
@@ -70,32 +70,41 @@ extension ViewController {
   }
 }
 
+//MARK: - COLLECTION VIEW DATA SOURCE PREFECTCHING
+extension ViewController: UICollectionViewDataSourcePrefetching{
+    
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        //Precached stuff
+    }
+  
+}
+
 //MARK: - COLLECTION VIEW DATA SOURCE
 extension ViewController: UICollectionViewDataSource {
   
-  func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data.count
 
   }
   
-  func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier( "Cell", forIndexPath: indexPath) as! CollectionViewCell
-        let cellDate = data[indexPath.item]
+        let cell = collectionView.dequeueReusableCell( withReuseIdentifier: "Cell", for: indexPath) as! CollectionViewCell
+        let cellDate = data[(indexPath as NSIndexPath).item]
         cell.monthLabel.text = cellDate.getMonthDescription()
         cell.month = cellDate
     
     //print(" index: \(indexPath.item) data:\(data.count - 3)")
     
-        if indexPath.item >= data.count - 3 {
-            self.performSelector(#selector(self.lastCellDataRelaoded))
+        if (indexPath as NSIndexPath).item >= data.count - 3 {
+            self.perform(#selector(self.lastCellDataRelaoded))
         }
     
-        if indexPath.item <= 1{
+        if (indexPath as NSIndexPath).item <= 1{
             if canadd{
                 canadd = false
                 print("add new")
-                 self.performSelector(#selector(self.firstCellDataRelaoded))
+                 self.perform(#selector(self.firstCellDataRelaoded))
             }
 
         }
@@ -113,7 +122,7 @@ extension ViewController: UICollectionViewDataSource {
 
             self.data.append(newLastMonth)
 
-            self.collectionView.insertItemsAtIndexPaths([NSIndexPath(forItem: self.data.count - 1, inSection: 0)])
+            self.collectionView.insertItems(at: [IndexPath(item: self.data.count - 1, section: 0)])
 
         }, completion: { completion in
                 self.prepareScrollView()
@@ -126,19 +135,19 @@ extension ViewController: UICollectionViewDataSource {
         
         self.collectionView.performBatchUpdates({
             
-            for _ in 0...3{
+            for _ in 0...6{
                 
                 let firtsMonth = self.data[0]
                 let newFirstMonth = firtsMonth.getPreviusMonth()
                 
-                self.data.insert(newFirstMonth, atIndex: 0)
+                self.data.insert(newFirstMonth, at: 0)
                 
-                self.collectionView.insertItemsAtIndexPaths([NSIndexPath(forItem: 0, inSection: 0)])
+                self.collectionView.insertItems(at: [IndexPath(item: 0, section: 0)])
             }
             
             }, completion: { completion in
                 //self.collectionView.selectItemAtIndexPath(NSIndexPath(forItem: 5, inSection: 0), animated: false, scrollPosition: .None)
-                self.performSelector(#selector(self.movescroll), withObject: nil, afterDelay: 0.0)
+                self.perform(#selector(self.movescroll), with: nil, afterDelay: 0.0)
                 self.canadd = true
                 
         })
@@ -147,7 +156,7 @@ extension ViewController: UICollectionViewDataSource {
     }
     
     func movescroll(){
-        self.scrollView.contentOffset = CGPoint(x: (self.cellWidth + self.spaceBetweenCells) * 5, y: 0)
+        self.scrollView.contentOffset = CGPoint(x: (self.cellWidth + self.spaceBetweenCells) * 9, y: 0)
     }
     
 }
@@ -155,11 +164,11 @@ extension ViewController: UICollectionViewDataSource {
 //MARK: - CUSTOMIZING COLLECTION VIEW FLOW LAYOUT
 extension ViewController: UICollectionViewDelegateFlowLayout {
   
-  func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAtIndex section: Int) -> CGFloat {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
     return self.spaceBetweenCells
   }
   
-  func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     
     let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
     self.cellWidth = self.collectionView.frame.width // self.collectionView.frame.height - (layout.sectionInset.top + layout.sectionInset.top)
@@ -167,7 +176,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     return CGSize(width: self.cellWidth, height: self.collectionView.frame.height - layout.sectionInset.top * 2)
   }
   
-  func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAtIndex section: Int) -> UIEdgeInsets {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
     let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
     return UIEdgeInsets(top: layout.sectionInset.top, left: self.horizontalInset, bottom: layout.sectionInset.top, right: self.horizontalInset)
   }
@@ -175,7 +184,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
 
 //MARK: - CUSTOMIZING SCROLL VIEW
 extension ViewController {
-  func scrollViewDidScroll(scrollView: UIScrollView) {
+  func scrollViewDidScroll(_ scrollView: UIScrollView) {
     self.collectionView.contentOffset.x = scrollView.contentOffset.x
   }
   /*
