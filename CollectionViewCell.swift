@@ -37,6 +37,7 @@ class CollectionViewCell: UICollectionViewCell {
         super.init(coder: aDecoder)
     }
     
+    
 }
 
 
