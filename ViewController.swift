@@ -19,7 +19,8 @@ class ViewController: UIViewController {
     let calendarG = CalendarGenerator()
     
   var cellWidth = CGFloat()
-    var canadd : Bool = false
+    var canAddToBeginning : Bool = false
+    var mustAddToBeginning : Bool = false
   
   override func viewDidLoad() {
     self.prepareCollectionView()
@@ -27,7 +28,7 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         self.collectionView.contentOffset = CGPoint(x: self.cellWidth * 12, y: 0)
-        self.canadd = true
+        self.canAddToBeginning = true
     }
   
   override func viewWillLayoutSubviews() {
@@ -52,6 +53,7 @@ extension ViewController {
         self.data.append(month as Date)
     }
     
+
     self.collectionView.reloadData()
     self.collectionView.contentOffset = CGPoint(x: self.cellWidth * 12, y: 0)
     
@@ -87,14 +89,13 @@ extension ViewController: UICollectionViewDataSource {
     //print(" index: \(indexPath.item) data:\(data.count - 3)")
     
         if (indexPath as NSIndexPath).item >= data.count - 3 {
-            self.perform(#selector(self.lastCellDataRelaoded))
+            self.lastCellDataRelaoded()
         }
     
         if (indexPath as NSIndexPath).item <= 1{
-            if canadd{
-                canadd = false
-                print("add new")
-                 self.perform(#selector(self.firstCellDataRelaoded))
+            if canAddToBeginning{
+                canAddToBeginning = false
+                mustAddToBeginning = true
             }
 
         }
@@ -121,30 +122,37 @@ extension ViewController: UICollectionViewDataSource {
 
     }
     
-    func firstCellDataRelaoded() {
-        
-        self.collectionView.performBatchUpdates({
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if scrollView == self.collectionView && self.mustAddToBeginning{
+            self.mustAddToBeginning = false
+            self.collectionView.isUserInteractionEnabled = false
             
-            for _ in 0...6{
-                
-                let firtsMonth = self.data[0]
-                let newFirstMonth = firtsMonth.getPreviusMonth()
-                
-                self.data.insert(newFirstMonth, at: 0)
-                
-                self.collectionView.insertItems(at: [IndexPath(item: 0, section: 0)])
-            }
+            CATransaction.begin()
+            CATransaction.setDisableActions(true) // <- This avoid the rare flicker effect
             
-            }, completion: { completion in
-                self.collectionView.contentOffset = CGPoint(x: self.cellWidth * 9, y: 0)
-                self.canadd = true
+            self.collectionView.performBatchUpdates({
                 
-        })
-
+                for _ in 0...6{
+                    
+                    let firtsMonth = self.data[0]
+                    let newFirstMonth = firtsMonth.getPreviusMonth()
+                    
+                    self.data.insert(newFirstMonth, at: 0)
+                    
+                    self.collectionView.insertItems(at: [IndexPath(item: 0, section: 0)])
+                }
+                
+                }, completion: { completion in
+                    self.collectionView.contentOffset = CGPoint(x: self.cellWidth * 9, y: 0)
+                    self.canAddToBeginning = true
+                    self.collectionView.isUserInteractionEnabled = true
+                    CATransaction.commit()
+            })
+            
+        }
         
     }
-    
-
     
 }
 

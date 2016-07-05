@@ -91,7 +91,7 @@ extension CollectionViewCell : UICollectionViewDelegateFlowLayout{
             rows = rows + 1
         }
         
-        print("\(monthLabel.text) \(monthNumber) \(rows)")
+        //print("\(monthLabel.text) \(monthNumber) \(rows)")
         
         return CGSize(width: collectionView.frame.size.width/7 - 1, height:collectionView.frame.size.height/rows - 1)
     }
