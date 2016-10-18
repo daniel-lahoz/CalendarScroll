@@ -167,7 +167,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     
     let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
     self.cellWidth = self.collectionView.frame.width // self.collectionView.frame.height - (layout.sectionInset.top + layout.sectionInset.top)
-    print("size: \(CGSize(width: self.cellWidth, height: self.collectionView.frame.height - layout.sectionInset.top * 2))")
+    //print("size: \(CGSize(width: self.cellWidth, height: self.collectionView.frame.height - layout.sectionInset.top * 2))")
     return CGSize(width: self.cellWidth, height: self.collectionView.frame.height - layout.sectionInset.top * 2)
   }
   
